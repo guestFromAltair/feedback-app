@@ -9,6 +9,7 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Prisma CLI (migrate) uses direct Postgres; use DATABASE_URL in app code for the pooler
+    url: process.env.DIRECT_URL,
   },
 });
