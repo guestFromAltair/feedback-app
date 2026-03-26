@@ -20,7 +20,6 @@ export default function SignupPage() {
     const password = formData.get("password") as string
 
     try {
-      // Step 1 — create the user in the database
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,7 +33,6 @@ export default function SignupPage() {
         return
       }
 
-      // Step 2 — automatically sign them in
       const signInResult = await signIn("credentials", {
         email,
         password,
@@ -46,7 +44,6 @@ export default function SignupPage() {
         return
       }
 
-      // Step 3 — redirect to dashboard
       router.push("/dashboard")
       router.refresh()
 
