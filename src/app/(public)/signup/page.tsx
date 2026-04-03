@@ -1,13 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import {useRouter, useSearchParams} from "next/navigation"
 import { signIn } from "next-auth/react"
 
 export default function SignupPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const redirectTo = searchParams.get("redirect") ?? "/dashboard"
+  const safeRedirect = (redirectTo.startsWith('/') && !redirectTo.startsWith('//'))
+      ? redirectTo
+      : "/dashboard";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -36,7 +42,7 @@ export default function SignupPage() {
       const signInResult = await signIn("credentials", {
         email,
         password,
-        redirect: false,
+        redirect: false
       })
 
       if (signInResult?.error) {
@@ -44,9 +50,8 @@ export default function SignupPage() {
         return
       }
 
-      router.push("/dashboard")
       router.refresh()
-
+      router.push(safeRedirect)
     } catch {
       setError("Something went wrong. Please try again.")
     } finally {
@@ -111,7 +116,7 @@ export default function SignupPage() {
         </div>
 
         <form action={async () => {
-          await signIn("github", { redirectTo: "/dashboard" })
+          await signIn("github", { callbackUrl: safeRedirect })
         }}>
           <button
             type="submit"
@@ -123,7 +128,7 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <a href="/login" className="underline">
+          <a href={`/login?redirect=${encodeURIComponent(safeRedirect)}`} className="underline">
             Sign in
           </a>
         </p>
