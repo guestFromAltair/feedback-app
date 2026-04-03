@@ -7,19 +7,19 @@ type Props = {
 const STATUS_CONFIG: Record<PostStatus, { label: string; className: string }> = {
     UNDER_REVIEW: {
         label: "Under review",
-        className: "bg-amber-50 text-amber-700 border-amber-200",
+        className: "bg-amber-50 text-amber-700 border-amber-200"
     },
     PLANNED: {
         label: "Planned",
-        className: "bg-purple-50 text-purple-700 border-purple-200",
+        className: "bg-purple-50 text-purple-700 border-purple-200"
     },
     IN_PROGRESS: {
         label: "In progress",
-        className: "bg-teal-50 text-teal-700 border-teal-200",
+        className: "bg-teal-50 text-teal-700 border-teal-200"
     },
     DONE: {
         label: "Done",
-        className: "bg-green-50 text-green-700 border-green-200",
+        className: "bg-green-50 text-green-700 border-green-200"
     }
 }
 

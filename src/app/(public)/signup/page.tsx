@@ -1,63 +1,77 @@
 "use client"
 
-import { useState } from "react"
+import React, {useEffect, useState} from "react"
 import {useRouter, useSearchParams} from "next/navigation"
 import { signIn } from "next-auth/react"
+import {getSafeRedirect} from "@/lib/utils";
+import {signupSchema} from "@/lib/schema";
+import Link from "next/link";
+
+const DEFAULT_DASHBOARD_PATH = "/dashboard";
 
 export default function SignupPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+    const router = useRouter()
+    const searchParams = useSearchParams()
 
-  const redirectTo = searchParams.get("redirect") ?? "/dashboard"
-  const safeRedirect = (redirectTo.startsWith('/') && !redirectTo.startsWith('//'))
-      ? redirectTo
-      : "/dashboard";
+    const [error, setError] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
+    const [redirectTo, setRedirectTo] = useState(DEFAULT_DASHBOARD_PATH)
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    useEffect(() => {
+        setRedirectTo(getSafeRedirect(searchParams.get("redirect"), DEFAULT_DASHBOARD_PATH))
+    }, [searchParams])
 
-    const formData = new FormData(e.currentTarget)
-    const name = formData.get("name") as string
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        setError(null)
+        const formData = new FormData(e.currentTarget)
 
-    try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      })
+        const name = formData.get("name") as string
+        const email = formData.get("email") as string
+        const password = formData.get("password") as string
 
-      const data = await res.json()
+        const result = signupSchema.safeParse({name, email, password})
+        if (!result.success) {
+            setError(result.error.issues[0].message)
+            return
+        }
 
-      if (!res.ok) {
-        setError(data.error)
-        return
-      }
+        setLoading(true)
 
-      const signInResult = await signIn("credentials", {
-        email,
-        password,
-        redirect: false
-      })
+        try {
+            const res = await fetch("/api/auth/signup", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({name, email, password})
+            })
 
-      if (signInResult?.error) {
-        setError("Account created but sign in failed. Please go to login.")
-        return
-      }
+            const data = await res.json()
 
-      router.refresh()
-      router.push(safeRedirect)
-    } catch {
-      setError("Something went wrong. Please try again.")
-    } finally {
-      setLoading(false)
+            if (!res.ok) {
+                setError(data.error || "Failed to create account")
+                setLoading(false)
+                return
+            }
+
+            const signInResult = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
+            })
+
+            if (signInResult?.error) {
+                setError("Account created but sign in failed. Please go to login.")
+                setLoading(false)
+                return
+            }
+
+            router.push(redirectTo)
+            router.refresh()
+        } catch {
+            setError("Something went wrong. Please try again.")
+            setLoading(false)
+        }
     }
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -116,7 +130,7 @@ export default function SignupPage() {
         </div>
 
         <form action={async () => {
-          await signIn("github", { callbackUrl: safeRedirect })
+          await signIn("github", { redirectTo: redirectTo })
         }}>
           <button
             type="submit"
@@ -128,9 +142,9 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <a href={`/login?redirect=${encodeURIComponent(safeRedirect)}`} className="underline">
+          <Link href="/login" className="underline">
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>
