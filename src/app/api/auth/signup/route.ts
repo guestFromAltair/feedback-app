@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
-import { z } from "zod"
-
-const signupSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-})
+import {signupSchema} from "@/lib/schema";
 
 export async function POST(req: Request) {
   try {
@@ -24,7 +18,7 @@ export async function POST(req: Request) {
     const { name, email, password } = parsed.data
 
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email }
     })
 
     if (existingUser) {
@@ -40,8 +34,8 @@ export async function POST(req: Request) {
       data: {
         name,
         email,
-        password: hashedPassword,
-      },
+        password: hashedPassword
+      }
     })
 
     return NextResponse.json(

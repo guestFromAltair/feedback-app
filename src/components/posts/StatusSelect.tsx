@@ -13,7 +13,7 @@ const ALL_STATUSES: PostStatus[] = [
     "UNDER_REVIEW",
     "PLANNED",
     "IN_PROGRESS",
-    "DONE",
+    "DONE"
 ]
 
 export default function StatusSelect({ postId, currentStatus }: Props) {
@@ -29,14 +29,14 @@ export default function StatusSelect({ postId, currentStatus }: Props) {
 
         setLoading(true)
         const previous = status
-        setStatus(newStatus) // optimistic
+        setStatus(newStatus)
         setOpen(false)
 
         try {
             const res = await fetch(`/api/posts/${postId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: newStatus }),
+                body: JSON.stringify({ status: newStatus })
             })
 
             if (!res.ok) {
