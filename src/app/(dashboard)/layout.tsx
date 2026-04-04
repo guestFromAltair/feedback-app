@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import Sidebar from "@/components/layout/Sidebar"
+import React from "react";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const session = await auth()

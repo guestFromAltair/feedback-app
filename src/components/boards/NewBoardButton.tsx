@@ -34,8 +34,8 @@ export default function NewBoardButton({ orgId }: Props) {
                 body: JSON.stringify({
                     name,
                     slug: slugify(name),
-                    isPublic,
-                }),
+                    isPublic
+                })
             })
 
             const data = await res.json()
