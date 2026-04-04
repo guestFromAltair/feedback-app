@@ -31,7 +31,7 @@ export default function Sidebar({ orgs, user }: Props) {
     return (
         <aside className="w-56 border-r flex flex-col h-full bg-muted/30 shrink-0">
             <div className="px-4 py-4 border-b">
-                <span className="font-medium text-sm">Feedbacker</span>
+                <span className="font-medium text-sm">FeedbackApp</span>
             </div>
 
             <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-1">
@@ -41,7 +41,6 @@ export default function Sidebar({ orgs, user }: Props) {
 
                 {orgs.map((org, i) => {
                     const orgHref = `/dashboard/${org.slug}`
-                    // 2. Improved active check to prevent "apple" matching "apple-pie"
                     const isActiveOrg = pathname === orgHref || pathname.startsWith(`${orgHref}/`)
 
                     return (
@@ -137,8 +136,6 @@ export default function Sidebar({ orgs, user }: Props) {
                             <Link href="/dashboard">Dashboard</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        {/* 3. Using form with action is standard for Server Actions,
-                               but ensure handleSignOut is correctly exported from lib/actions */}
                         <DropdownMenuItem asChild>
                             <form action={handleSignOut} className="w-full">
                                 <button type="submit" className="w-full text-left text-sm cursor-default">

@@ -23,7 +23,7 @@ export default function InviteForm({ orgId }: Props) {
             const res = await fetch(`/api/orgs/${orgId}/invites`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, role }),
+                body: JSON.stringify({ email, role })
             })
 
             const data = await res.json()

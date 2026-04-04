@@ -6,8 +6,20 @@ import { z } from "zod"
 const createOrgSchema = z.object({
     name: z.string().min(1, "Name is required").max(50),
     slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/, {
-        message: "Slug can only contain lowercase letters, numbers and hyphens",
-    }),
+        message: "Slug can only contain lowercase letters, numbers and hyphens"
+    })
+})
+
+const updateOrgSchema = z.object({
+    name: z.string().min(1).max(50),
+    slug: z
+        .string()
+        .min(1)
+        .max(50)
+        .regex(/^[a-z0-9-]+$/, {
+            message:
+                "Slug can only contain lowercase letters, numbers and hyphens"
+        })
 })
 
 export async function GET() {
