@@ -11,7 +11,7 @@ export default async function LoginPage({ searchParams }: Props) {
   const { redirect } = await searchParams
   const redirectTo = getSafeRedirect(redirect, DEFAULT_DASHBOARD_PATH)
   return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-sm space-y-6 p-8 border rounded-xl">
           <div className="flex flex-col items-center justify-center">
             <h1 className="text-2xl font-medium">Sign in</h1>

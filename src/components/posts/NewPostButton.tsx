@@ -49,7 +49,7 @@ export default function NewPostButton({ boardId }: Props) {
         return (
             <button
                 onClick={() => setOpen(true)}
-                className="text-sm border rounded-lg px-4 py-2 hover:bg-muted transition-colors"
+                className="w-full text-xs border rounded-lg px-3 py-2 hover:bg-muted transition-colors whitespace-nowrap"
             >
                 + New post
             </button>
@@ -59,20 +59,19 @@ export default function NewPostButton({ boardId }: Props) {
     return (
         <form
             onSubmit={handleSubmit}
-            className="border rounded-xl p-4 space-y-3 w-full max-w-md"
+            className="border bg-white shadow-sm rounded-xl p-4 space-y-3 w-full sm:max-w-md"
         >
-            <p className="text-sm font-medium">New post</p>
+            <p className="text-sm font-semibold">New post</p>
 
-            {error && (
-                <p className="text-xs text-red-600">{error}</p>
-            )}
+            {error && <p className="text-xs text-red-600 bg-red-50 p-2 rounded-md">{error}</p>}
 
             <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Title"
-                className="w-full border rounded-lg px-3 py-2 text-sm"
+                // text-base on mobile prevents iOS auto-zoom
+                className="w-full border rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-black"
                 autoFocus
                 required
             />
@@ -81,22 +80,22 @@ export default function NewPostButton({ boardId }: Props) {
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Description (optional)"
-                className="w-full border rounded-lg px-3 py-2 text-sm resize-none"
+                className="w-full border rounded-lg px-3 py-2 text-base sm:text-sm resize-none focus:outline-none focus:ring-1 focus:ring-black"
                 rows={3}
             />
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-1">
                 <button
                     type="submit"
                     disabled={loading || !title}
-                    className="flex-1 bg-black text-white rounded-lg px-3 py-1.5 text-sm disabled:opacity-50"
+                    className="flex-1 bg-black text-white rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-50"
                 >
                     {loading ? "Posting..." : "Post"}
                 </button>
                 <button
                     type="button"
                     onClick={() => { setOpen(false); setTitle(""); setBody("") }}
-                    className="flex-1 border rounded-lg px-3 py-1.5 text-sm"
+                    className="flex-1 border rounded-lg px-3 py-2 text-sm font-medium hover:bg-gray-50"
                 >
                     Cancel
                 </button>
