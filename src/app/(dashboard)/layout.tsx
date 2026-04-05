@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import Sidebar from "@/components/layout/Sidebar"
 import React from "react";
+import Topbar from "@/components/layout/Topbar";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const session = await auth()
@@ -16,23 +17,26 @@ export default async function DashboardLayout({ children }: { children: React.Re
         include: {
             org: {
                 include: {
-                    boards: true,
-                },
-            },
-        },
+                    boards: true
+                }
+            }
+        }
     })
 
     const orgs = memberships.map((m) => ({
         ...m.org,
-        boards: m.org.boards,
+        boards: m.org.boards
     }))
 
     return (
-        <div className="flex h-screen overflow-hidden">
-            <Sidebar orgs={orgs} user={session.user} />
-            <main className="flex-1 overflow-y-auto bg-background">
-                {children}
-            </main>
+        <div className="flex flex-col h-screen overflow-hidden">
+            <Topbar orgs={orgs} user={session.user} />
+            <div className="flex flex-1 overflow-hidden">
+                <Sidebar orgs={orgs} user={session.user} />
+                <main className="flex-1 overflow-y-auto bg-background">
+                    {children}
+                </main>
+            </div>
         </div>
     )
 }

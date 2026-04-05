@@ -30,23 +30,27 @@ export default async function OrgPage({params}: { params: Promise<{ org: string 
     const boards = await prisma.board.findMany({
         where: {orgId: org.id},
         include: {
-            _count: {select: {posts: true}},
+            _count: {select: {posts: true}}
         },
-        orderBy: {createdAt: "asc"},
+        orderBy: {createdAt: "asc"}
     })
 
     const isAdmin = membership.role === "ADMIN"
 
     return (
-        <div className="p-8 max-w-4xl">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-2xl font-medium">{org.name}</h1>
-                    <p className="text-muted-foreground text-sm mt-1">
+        <div className="p-4 md:p-8 max-w-4xl">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                        {org.name}
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
                         feedbacker.app/{org.slug}
                     </p>
                 </div>
-                {isAdmin && <NewBoardButton orgId={org.id}/>}
+                <div className="w-full md:w-auto flex justify-start md:justify-end">
+                    <NewBoardButton orgId={org.id} />
+                </div>
             </div>
 
             {boards.length === 0 ? (

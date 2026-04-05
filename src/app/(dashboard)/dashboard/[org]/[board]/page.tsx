@@ -60,28 +60,32 @@ export default async function AdminBoardPage({params}: { params: Promise<{ org: 
 
     return (
         <div className="p-8 max-w-3xl">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <Link href={`/dashboard/${orgSlug}`} className="hover:underline">
+                    <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground mb-1">
+                        <Link href={`/dashboard/${orgSlug}`} className="hover:underline truncate max-w-[120px]">
                             {org.name}
                         </Link>
                         <span>/</span>
-                        <span>{board.name}</span>
+                        <span className="truncate max-w-30">{board.name}</span>
                     </div>
-                    <h1 className="text-2xl font-medium">{board.name}</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight">{board.name}</h1>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                     {board.isPublic && (
                         <Link
                             href={`/${orgSlug}/${boardSlug}`}
                             target="_blank"
-                            className="text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors"
+                            className="flex-1 sm:flex-none text-center text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-2 hover:bg-blue-50 transition-colors whitespace-nowrap"
                         >
                             View public board →
                         </Link>
                     )}
-                    {isAdmin && <NewPostButton boardId={board.id} />}
+                    {isAdmin && (
+                        <div className="flex-1 sm:flex-none">
+                            <NewPostButton boardId={board.id} />
+                        </div>
+                    )}
                 </div>
             </div>
             <p className="text-sm text-muted-foreground mb-4">

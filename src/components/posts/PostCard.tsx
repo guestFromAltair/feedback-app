@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { PostStatus } from "@prisma/client"
 import Link from "next/link"
 import StatusBadge from "./StatusBadge"
@@ -36,11 +35,9 @@ export default function PostCard({
                                      post,
                                      isAdmin,
                                      hasVoted,
-                                     currentUserId,
                                      orgSlug,
                                      boardSlug,
                                  }: Props) {
-    const router = useRouter()
     const [voted, setVoted] = useState(hasVoted)
     const [voteCount, setVoteCount] = useState(post._count.votes)
     const [voting, setVoting] = useState(false)
@@ -52,7 +49,7 @@ export default function PostCard({
         const originalVoted = voted
         const originalCount = voteCount
 
-        // Optimistic Update (Updates the voted and voteCount in UI immediately)
+        // Optimistic Update (Update the voted and voteCount in UI immediately)
         setVoted(!originalVoted)
         setVoteCount(prev => originalVoted ? prev - 1 : prev + 1)
 
@@ -106,18 +103,20 @@ export default function PostCard({
                     </p>
                 )}
 
-                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                <div className="flex items-center gap-3 mt-2 flex-wrap min-w-0">
                     {isAdmin ? (
                         <StatusSelect postId={post.id} currentStatus={post.status} />
                     ) : (
                         <StatusBadge status={post.status} />
                     )}
 
-                    {post.author && (
-                        <span className="text-xs text-muted-foreground">
-                          {post.author.email}
-                        </span>
-                    )}
+                    <div className="flex items-center gap-3 mt-2 flex-wrap min-w-0">
+                        {post.author && (
+                            <span className="text-xs text-muted-foreground truncate max-w-32">
+                              {post.author.email}
+                            </span>
+                        )}
+                    </div>
 
                     <span className="text-xs text-muted-foreground">
             💬           {post._count.comments}
