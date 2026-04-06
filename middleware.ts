@@ -1,11 +1,8 @@
-import { auth } from "@/auth"
+import { edgeAuth } from "./auth-edge"
 import { NextResponse } from "next/server"
+import {NextAuthRequest} from "next-auth";
 
-// This middleware depends on auth helpers that pull in Node-only dependencies
-// (e.g. Prisma). Force Node.js runtime to keep the build/bundling happy.
-export const runtime = "nodejs"
-
-export default auth((req) => {
+export default edgeAuth((req: NextAuthRequest) => {
   const isLoggedIn = !!req.auth
   const isDashboard = req.nextUrl.pathname.startsWith("/dashboard")
 
