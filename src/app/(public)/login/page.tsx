@@ -16,7 +16,7 @@ export default async function LoginPage({ searchParams }: Props) {
           <div className="flex flex-col items-center justify-center">
             <h1 className="text-2xl font-medium">Sign in</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Welcome back to Feedbacker
+              Welcome back to FeedbackApp
             </p>
           </div>
 

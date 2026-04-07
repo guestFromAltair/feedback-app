@@ -110,7 +110,7 @@ export async function POST(
         console.log(`
       ---- INVITE EMAIL ----
       To: ${email}
-      Subject: You've been invited to ${org.name} on Feedbacker
+      Subject: You've been invited to ${org.name} on FeedbackApp
       
       ${session.user.name} has invited you to join ${org.name}.
       Click the link below to accept:

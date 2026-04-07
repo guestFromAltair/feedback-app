@@ -45,7 +45,7 @@ export default async function OrgPage({params}: { params: Promise<{ org: string 
                         {org.name}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        feedbacker.app/{org.slug}
+                        feedback.app/{org.slug}
                     </p>
                 </div>
                 <div className="w-full md:w-auto flex justify-start md:justify-end">

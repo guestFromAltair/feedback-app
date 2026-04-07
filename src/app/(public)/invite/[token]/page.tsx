@@ -65,7 +65,7 @@ export default async function InvitePage({params}: {
                     <p className="text-muted-foreground text-sm">
                         You&#39;ve been invited to join{" "}
                         <span className="font-medium text-foreground">{org.name}</span>{" "}
-                        on Feedbacker
+                        on FeedbackApp
                     </p>
                 </div>
 

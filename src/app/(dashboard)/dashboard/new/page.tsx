@@ -74,7 +74,7 @@ export default function NewWorkspacePage() {
                     />
                     {slug && (
                         <p className="text-xs text-muted-foreground">
-                            URL: feedbacker.app/<span className="font-medium">{slug}</span>
+                            URL: feedback.app/<span className="font-medium">{slug}</span>
                         </p>
                     )}
                 </div>
