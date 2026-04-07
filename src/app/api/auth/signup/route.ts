@@ -21,22 +21,33 @@ export async function POST(req: Request) {
       where: { email }
     })
 
+    let user = null;
     if (existingUser) {
-      return NextResponse.json(
-        { error: "An account with this email already exists" },
-        { status: 409 }
-      )
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword
+      if (existingUser.password) {
+        return NextResponse.json(
+            {error: "An account with this email already exists"},
+            {status: 409}
+        )
+      } else {
+        const hashedPassword = await bcrypt.hash(password, 12)
+        user = await prisma.user.update({
+          where: {email},
+          data: {
+            name,
+            password: hashedPassword
+          }
+        })
       }
-    })
+    } else {
+      const hashedPassword = await bcrypt.hash(password, 12)
+      user = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword
+        }
+      })
+    }
 
     return NextResponse.json(
       { message: "Account created successfully", userId: user.id },

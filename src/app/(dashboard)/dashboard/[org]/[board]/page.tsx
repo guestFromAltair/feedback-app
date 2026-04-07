@@ -53,7 +53,7 @@ export default async function AdminBoardPage({params}: { params: Promise<{ org: 
                 select: { id: true }
             }
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: "desc" }
     })
 
     const isAdmin = membership.role === "ADMIN"
@@ -63,7 +63,7 @@ export default async function AdminBoardPage({params}: { params: Promise<{ org: 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground mb-1">
-                        <Link href={`/dashboard/${orgSlug}`} className="hover:underline truncate max-w-[120px]">
+                        <Link href={`/dashboard/${orgSlug}`} className="hover:underline truncate max-w-30">
                             {org.name}
                         </Link>
                         <span>/</span>
