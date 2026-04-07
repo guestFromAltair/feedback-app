@@ -188,16 +188,14 @@ export default function SidebarNav({ orgs, user, onNavigateAction }: Props) {
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                            <form action={handleSignOut} className="w-full">
-                                <button
-                                    type="submit"
-                                    className="w-full text-left text-sm"
-                                >
-                                    Sign out
-                                </button>
-                            </form>
-                        </DropdownMenuItem>
+                        <form action={handleSignOut} className="w-full">
+                            <button
+                                type="submit"
+                                className="w-full text-left text-sm px-2 py-1.5 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer outline-hidden"
+                            >
+                                Sign out
+                            </button>
+                        </form>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

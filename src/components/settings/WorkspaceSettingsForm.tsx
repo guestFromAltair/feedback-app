@@ -110,7 +110,7 @@ export default function WorkspaceSettingsForm({orgId, currentName, currentSlug}:
                 </label>
                 <div className="flex items-center border rounded-lg overflow-hidden">
                   <span className="px-3 py-2 text-sm text-muted-foreground bg-muted border-r">
-                    feedbacker.app/
+                    feedback.app/
                   </span>
                     <input
                         type="text"

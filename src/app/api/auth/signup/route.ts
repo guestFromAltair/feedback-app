@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const parsed = signupSchema.safeParse(body)
     if (!parsed.success) {
         return NextResponse.json(
-          { error: parsed.error.issues[0].message }, 
+          { error: parsed.error.issues[0].message },
           { status: 400 }
         )
       }
