@@ -80,7 +80,7 @@ export async function sendInviteEmail({to, inviterName, orgName, inviteUrl}: Sen
                 managing product feedback.
               </p>
 
-              
+              <a
                 href="${inviteUrl}"
                 style="
                   display: inline-block;
@@ -203,7 +203,7 @@ export async function sendWelcomeEmail({to, name,}: SendWelcomeEmailParams): Pro
                 your users.
               </p>
 
-              
+              <a
                 href="${process.env.NEXTAUTH_URL}/dashboard"
                 style="
                   display: inline-block;
