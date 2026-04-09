@@ -9,6 +9,7 @@ type Org = {
     name: string
     slug: string
     boards: Board[]
+    isAdmin: boolean
 }
 
 type Board = {

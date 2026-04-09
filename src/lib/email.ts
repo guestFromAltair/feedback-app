@@ -141,7 +141,7 @@ export async function sendInviteEmail({to, inviterName, orgName, inviteUrl}: Sen
     })
 }
 
-export async function sendWelcomeEmail({to, name,}: SendWelcomeEmailParams): Promise<void> {
+export async function sendWelcomeEmail({to, name}: SendWelcomeEmailParams): Promise<void> {
     await resend.emails.send({
         from: process.env.EMAIL_FROM!,
         to,

@@ -23,10 +23,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
         }
     })
 
-    const orgs = memberships.map((m) => ({
-        ...m.org,
-        boards: m.org.boards
-    }))
+    const orgs = memberships.map((m) => {
+        const isAdmin = m.role === "ADMIN";
+
+        return {
+            ...m.org,
+            boards: isAdmin
+                ? m.org.boards
+                : m.org.boards.filter(board => board.isPublic),
+            isAdmin
+        };
+    });
 
     return (
         <div className="flex flex-col h-screen overflow-hidden">
