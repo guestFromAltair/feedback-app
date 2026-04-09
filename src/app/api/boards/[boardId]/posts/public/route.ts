@@ -1,30 +1,51 @@
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/db"
-import { z } from "zod"
+import {NextResponse} from "next/server"
+import {prisma} from "@/lib/db"
+import {z} from "zod"
+import {headers} from "next/headers";
+import {publicPostRateLimit} from "@/lib/ratelimit";
 
 const publicPostSchema = z.object({
     title: z.string().min(1, "Title is required").max(200),
     body: z.string().max(2000).optional(),
     name: z.string().min(1, "Name is required").max(100),
-    email: z.email("Invalid email"),
+    email: z.email("Invalid email")
 })
 
-export async function POST(
-    req: Request,
-    { params }: { params: Promise<{ boardId: string }> }
-) {
-    const { boardId } = await params
+export async function POST(req: Request, {params}: { params: Promise<{ boardId: string }> }) {
+    const {boardId} = await params
+
+    const headersList = await headers()
+    const ip =
+        headersList.get("x-forwarded-for")?.split(",")[0] ??
+        headersList.get("x-real-ip") ??
+        "anonymous"
+
+    const {success, limit, remaining, reset} = await publicPostRateLimit.limit(ip)
+    if (!success) {
+        return NextResponse.json(
+            {
+                error: "You've submitted too many posts. Please wait before trying again."
+            },
+            {
+                status: 429,
+                headers: {
+                    "X-RateLimit-Limit": limit.toString(),
+                    "X-RateLimit-Remaining": remaining.toString(),
+                    "X-RateLimit-Reset": reset.toString()
+                }
+            }
+        )
+    }
 
     try {
-        // Verify the board exists and is public
         const board = await prisma.board.findUnique({
-            where: { id: boardId },
+            where: {id: boardId},
         })
 
         if (!board || !board.isPublic) {
             return NextResponse.json(
-                { error: "Board not found" },
-                { status: 404 }
+                {error: "Board not found"},
+                {status: 404}
             )
         }
 
@@ -33,22 +54,20 @@ export async function POST(
 
         if (!parsed.success) {
             return NextResponse.json(
-                { error: parsed.error.issues[0].message },
-                { status: 400 }
+                {error: parsed.error.issues[0].message},
+                {status: 400}
             )
         }
 
-        const { title, body: postBody, name, email } = parsed.data
+        const {title, body: postBody, name, email} = parsed.data
 
-        // Find or create a user record for this email
-        // This lets anonymous users get credit for their posts
         let user = await prisma.user.findUnique({
-            where: { email },
+            where: {email}
         })
 
         if (!user) {
             user = await prisma.user.create({
-                data: { email, name },
+                data: {email, name}
             })
         }
 
@@ -57,16 +76,16 @@ export async function POST(
                 title,
                 body: postBody,
                 boardId,
-                authorId: user.id,
-            },
+                authorId: user.id
+            }
         })
 
-        return NextResponse.json(post, { status: 201 })
+        return NextResponse.json(post, {status: 201})
     } catch (error) {
         console.error(error)
         return NextResponse.json(
-            { error: "Something went wrong" },
-            { status: 500 }
+            {error: "Something went wrong"},
+            {status: 500}
         )
     }
 }
