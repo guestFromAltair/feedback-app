@@ -11,12 +11,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+import {useState} from "react";
 
 type Org = {
     id: string
     name: string
     slug: string
     boards: Board[]
+    isAdmin: boolean
 }
 
 type Board = {
@@ -123,29 +125,34 @@ export default function SidebarNav({ orgs, user, onNavigateAction }: Props) {
                                         </Link>
                                     ))}
 
-                                    <Link
-                                        href={`/dashboard/${org.slug}/members`}
-                                        onClick={onNavigateAction}
-                                        className={`flex items-center px-2 py-1 rounded-md text-sm transition-colors ${
-                                            pathname === `/dashboard/${org.slug}/members`
-                                                ? "bg-background border text-foreground"
-                                                : "text-muted-foreground hover:text-foreground hover:bg-background"
-                                        }`}
-                                    >
-                                        Members
-                                    </Link>
+                                    {org.isAdmin && (
+                                        <Link
+                                            href={`/dashboard/${org.slug}/members`}
+                                            onClick={onNavigateAction}
+                                            className={`flex items-center px-2 py-1 rounded-md text-sm transition-colors ${
+                                                pathname === `/dashboard/${org.slug}/members`
+                                                    ? "bg-background border text-foreground"
+                                                    : "text-muted-foreground hover:text-foreground hover:bg-background"
+                                            }`}
+                                        >
+                                            Members
+                                        </Link>
+                                    )}
 
-                                    <Link
-                                        href={`/dashboard/${org.slug}/settings`}
-                                        onClick={onNavigateAction}
-                                        className={`flex items-center px-2 py-1 rounded-md text-sm transition-colors ${
-                                            pathname === `/dashboard/${org.slug}/settings`
-                                                ? "bg-background border text-foreground"
-                                                : "text-muted-foreground hover:text-foreground hover:bg-background"
-                                        }`}
-                                    >
-                                        Settings
-                                    </Link>
+                                    {org.isAdmin && (
+                                        <Link
+                                            href={`/dashboard/${org.slug}/settings`}
+                                            onClick={onNavigateAction}
+                                            className={`flex items-center px-2 py-1 rounded-md text-sm transition-colors ${
+                                                pathname === `/dashboard/${org.slug}/settings`
+                                                    ? "bg-background border text-foreground"
+                                                    : "text-muted-foreground hover:text-foreground hover:bg-background"
+                                            }`}
+                                        >
+                                            Settings
+                                        </Link>
+                                    )}
+
                                 </div>
                             )}
                         </div>

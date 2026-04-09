@@ -3,9 +3,10 @@ import {getSafeRedirect} from "@/lib/utils"
 
 const DEFAULT_DASHBOARD_PATH = "/dashboard"
 
-export default function SignupPage({searchParams}: { searchParams: { redirect?: string } }) {
+export default async function SignupPage({searchParams}: { searchParams: { redirect?: string } }) {
+    const awaitedSearchParams = await searchParams;
     const redirectTo = getSafeRedirect(
-        searchParams.redirect,
+        awaitedSearchParams.redirect,
         DEFAULT_DASHBOARD_PATH
     )
 
