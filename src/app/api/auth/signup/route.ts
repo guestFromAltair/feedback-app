@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
-import {signupSchema} from "@/lib/schema";
+import { z } from "zod"
+import { sendWelcomeEmail } from "@/lib/email"
+
+const signupSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+})
 
 export async function POST(req: Request) {
   try {
@@ -21,32 +28,44 @@ export async function POST(req: Request) {
       where: { email }
     })
 
-    let user = null;
     if (existingUser) {
       if (existingUser.password) {
         return NextResponse.json(
             {error: "An account with this email already exists"},
             {status: 409}
         )
-      } else {
-        const hashedPassword = await bcrypt.hash(password, 12)
-        user = await prisma.user.update({
-          where: {email},
-          data: {
-            name,
-            password: hashedPassword
-          }
-        })
       }
-    } else {
+
+      // Upgrade lightweight account to full account
       const hashedPassword = await bcrypt.hash(password, 12)
-      user = await prisma.user.create({
-        data: {
-          name,
-          email,
-          password: hashedPassword
-        }
+
+      await prisma.user.update({
+        where: { email },
+        data: { name, password: hashedPassword }
       })
+
+      try {
+        await sendWelcomeEmail({ to: email, name })
+      } catch (emailError) {
+        console.error("Failed to send welcome email:", emailError)
+      }
+
+      return NextResponse.json(
+          { message: "Account created successfully", userId: existingUser.id },
+          { status: 201 }
+      )
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12)
+
+    const user = await prisma.user.create({
+      data: { name, email, password: hashedPassword }
+    })
+
+    try {
+      await sendWelcomeEmail({ to: email, name })
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError)
     }
 
     return NextResponse.json(

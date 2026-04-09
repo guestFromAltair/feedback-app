@@ -3,10 +3,11 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/db"
 import { z } from "zod"
 import { nanoid } from "nanoid"
+import {sendInviteEmail} from "@/lib/email";
 
 const inviteSchema = z.object({
     email: z.email(),
-    role: z.enum(["ADMIN", "MEMBER"]).default("MEMBER"),
+    role: z.enum(["ADMIN", "MEMBER"]).default("MEMBER")
 })
 
 export async function POST(
@@ -57,7 +58,6 @@ export async function POST(
             )
         }
 
-        // Check if user is already a member
         const existingUser = await prisma.user.findUnique({
             where: { email }
         })
@@ -79,7 +79,6 @@ export async function POST(
                 )
             }
 
-            // If they already have an account then we add them directly
             await prisma.membership.create({
                 data: {
                     userId: existingUser.id,
@@ -88,14 +87,24 @@ export async function POST(
                 }
             })
 
+            try {
+                await sendInviteEmail({
+                    to: email,
+                    inviterName: session.user.name ?? "FeedbackApp Team",
+                    orgName: org.name,
+                    inviteUrl: `${process.env.NEXTAUTH_URL}/dashboard/${org.slug}`
+                })
+            } catch (emailError) {
+                // We don't fail the request if email fails
+                console.error("Failed to send notification email:", emailError)
+            }
+
             return NextResponse.json({ message: "Member added successfully" })
         }
 
-        // Generate a secure invite token
         const token = nanoid(32)
-        const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
-        // Store the invite token in the VerificationToken table
         await prisma.verificationToken.create({
             data: {
                 identifier: `invite:${orgId}:${role}:${email}`,
@@ -105,27 +114,23 @@ export async function POST(
         })
 
         const inviteUrl = `${process.env.NEXTAUTH_URL}/invite/${token}`
+        try {
+            await sendInviteEmail({
+                to: email,
+                inviterName: session.user.name ?? "Someone",
+                orgName: org.name,
+                inviteUrl
+            })
+        } catch (emailError) {
+            await prisma.verificationToken.delete({ where: { token } })
+            console.error("Failed to send invite email:", emailError)
+            return NextResponse.json(
+                { error: "Failed to send invite email. Please try again." },
+                { status: 500 }
+            )
+        }
 
-        // We log it to the console for testing
-        console.log(`
-      ---- INVITE EMAIL ----
-      To: ${email}
-      Subject: You've been invited to ${org.name} on FeedbackApp
-      
-      ${session.user.name} has invited you to join ${org.name}.
-      Click the link below to accept:
-      
-      ${inviteUrl}
-      
-      This link expires in 7 days.
-      ----------------------
-    `)
-
-        return NextResponse.json({
-            message: `Invite sent to ${email}`,
-            // Return the URL for testing
-            ...(process.env.NODE_ENV === "development" && { inviteUrl })
-        })
+        return NextResponse.json({message: `Invite sent to ${email}`})
     } catch (error) {
         console.error(error)
         return NextResponse.json(
