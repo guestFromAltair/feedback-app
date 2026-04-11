@@ -6,6 +6,8 @@ import StatusBadge from "@/components/posts/StatusBadge"
 import StatusSelect from "@/components/posts/StatusSelect"
 import CommentList from "@/components/comments/CommentList"
 import CommentForm from "@/components/comments/CommentForm"
+import EditPostDialog from "@/components/posts/EditPostDialog";
+import DeletePostButton from "@/components/posts/DeletePostButton";
 
 export default async function AdminPostPage({params}: {
     params: Promise<{ org: string; board: string; postId: string }>
@@ -120,6 +122,21 @@ export default async function AdminPostPage({params}: {
                                 <span className="text-xs text-muted-foreground">
                                   by {post.author.name ?? post.author.email}
                                 </span>
+                            )}
+
+                            {(isAdmin || post.author?.id === session.user.id) && (
+                                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                                    <EditPostDialog
+                                        postId={post.id}
+                                        currentTitle={post.title}
+                                        currentBody={post.body}
+                                    />
+                                    <span className="text-muted-foreground text-xs">·</span>
+                                    <DeletePostButton
+                                        postId={post.id}
+                                        postTitle={post.title}
+                                    />
+                                </div>
                             )}
 
                             <span className="text-xs text-muted-foreground">
