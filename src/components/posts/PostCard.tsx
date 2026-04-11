@@ -5,6 +5,9 @@ import { PostStatus } from "@prisma/client"
 import Link from "next/link"
 import StatusBadge from "./StatusBadge"
 import StatusSelect from "./StatusSelect"
+import DeletePostButton from "@/components/posts/DeletePostButton";
+import EditPostDialog from "@/components/posts/EditPostDialog";
+import {useRouter} from "next/navigation";
 
 type Author = {
     id: string
@@ -31,16 +34,15 @@ type Props = {
     boardSlug: string
 }
 
-export default function PostCard({
-                                     post,
-                                     isAdmin,
-                                     hasVoted,
-                                     orgSlug,
-                                     boardSlug,
-                                 }: Props) {
+export default function PostCard({post, isAdmin, hasVoted, currentUserId, orgSlug, boardSlug}: Props) {
+    const router = useRouter()
     const [voted, setVoted] = useState(hasVoted)
     const [voteCount, setVoteCount] = useState(post._count.votes)
     const [voting, setVoting] = useState(false)
+    const [deleted, setDeleted] = useState(false)
+
+    const isAuthor = post.author?.id === currentUserId
+    const canEditOrDelete = isAdmin || isAuthor
 
     async function handleVote() {
         if (voting) return
@@ -55,11 +57,11 @@ export default function PostCard({
 
         try {
             const res = await fetch(`/api/posts/${post.id}/votes`, {
-                method: originalVoted ? "DELETE" : "POST",
+                method: originalVoted ? "DELETE" : "POST"
             })
 
             if (!res.ok) throw new Error("Failed to vote")
-
+            router.refresh()
         } catch {
             setVoted(originalVoted)
             setVoteCount(originalCount)
@@ -67,6 +69,8 @@ export default function PostCard({
             setVoting(false)
         }
     }
+
+    if (deleted) return null
 
     return (
         <div className="flex gap-4 p-4 border rounded-xl hover:bg-muted/20 transition-colors">
@@ -121,6 +125,21 @@ export default function PostCard({
                     <span className="text-xs text-muted-foreground">
             💬           {post._count.comments}
                     </span>
+
+                    {canEditOrDelete && (
+                        <div className="flex items-center gap-2 ml-auto">
+                            <EditPostDialog
+                                postId={post.id}
+                                currentTitle={post.title}
+                                currentBody={post.body}
+                            />
+                            <DeletePostButton
+                                postId={post.id}
+                                postTitle={post.title}
+                                onDelete={() => setDeleted(true)}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 

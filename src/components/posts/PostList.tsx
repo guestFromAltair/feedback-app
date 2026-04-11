@@ -33,13 +33,7 @@ const STATUS_ORDER: PostStatus[] = [
     "DONE",
 ]
 
-export default function PostList({
-                                     posts,
-                                     isAdmin,
-                                     currentUserId,
-                                     orgSlug,
-                                     boardSlug,
-                                 }: Props) {
+export default function PostList({posts, isAdmin, currentUserId, orgSlug, boardSlug}: Props) {
     if (posts.length === 0) {
         return (
             <div className="border rounded-xl p-12 text-center">
@@ -50,15 +44,13 @@ export default function PostList({
         )
     }
 
-    const sorted = [...posts].sort(
-        (a, b) => b._count.votes - a._count.votes
-    )
+    const sorted = [...posts].sort((a, b) => b._count.votes - a._count.votes)
 
     return (
         <div className="space-y-3">
             {sorted.map((post) => (
                 <PostCard
-                    key={post.id}
+                    key={`${post.id}-${post._count.votes}`}
                     post={post}
                     isAdmin={isAdmin}
                     hasVoted={post.votes.length > 0}
