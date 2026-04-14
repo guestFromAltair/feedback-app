@@ -1,8 +1,10 @@
 import {notFound} from "next/navigation"
 import {prisma} from "@/lib/db"
 import {auth} from "@/auth"
-import PublicPostList from "@/components/posts/PublicPostList"
 import SubmitPostForm from "@/components/posts/SubmitPostForm"
+import PaginatedPostList from "@/components/posts/PaginatedPostList";
+
+const POSTS_PER_PAGE = 10
 
 export async function generateMetadata({params}: { params: Promise<{ org: string; board: string }> }) {
     const {org: orgSlug, board: boardSlug} = await params
@@ -46,15 +48,21 @@ export default async function PublicBoardPage({params}: { params: Promise<{ org:
             _count: {
                 select: {votes: true, comments: true}
             },
-            votes: session?.user?.id
-                ? {where: {userId: session.user.id}, select: {id: true}}
-                : false
+            votes: session?.user?.id ? {where: {userId: session.user.id}, select: {id: true}} : false
         },
         orderBy: [
             {votes: {_count: "desc"}},
             {createdAt: "desc"}
-        ]
+        ],
+        take: POSTS_PER_PAGE
     })
+
+    const totalCount = await prisma.post.count({
+        where: { boardId: board.id }
+    })
+
+    const hasMore = totalCount > POSTS_PER_PAGE
+    const lastPost = posts[posts.length - 1]
 
     return (
         <div className="max-w-2xl mx-auto px-4 py-12">
@@ -72,12 +80,16 @@ export default async function PublicBoardPage({params}: { params: Promise<{ org:
                 <SubmitPostForm boardId={board.id}/>
             </div>
 
-            <PublicPostList
-                posts={posts.map((p) => ({
+            <PaginatedPostList
+                initialPosts={posts.map((p) => ({
                     ...p,
-                    hasVoted: Array.isArray(p.votes) && p.votes.length > 0,
+                    hasVoted: Array.isArray(p.votes) && p.votes.length > 0
                 }))}
+                boardId={board.id}
                 currentUserId={session?.user?.id ?? null}
+                totalCount={totalCount}
+                hasMore={hasMore}
+                lastCursor={lastPost?.id ?? null}
             />
         </div>
     )

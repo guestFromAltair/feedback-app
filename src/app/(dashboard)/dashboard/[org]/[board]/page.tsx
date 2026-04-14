@@ -1,18 +1,20 @@
-import { auth } from "@/auth"
-import { redirect, notFound } from "next/navigation"
-import { prisma } from "@/lib/db"
+import {auth} from "@/auth"
+import {redirect, notFound} from "next/navigation"
+import {prisma} from "@/lib/db"
 import Link from "next/link"
-import PostList from "@/components/posts/PostList"
 import NewPostButton from "@/components/posts/NewPostButton"
+import AdminPostList from "@/components/posts/AdminPostList";
+
+const POSTS_PER_PAGE = 10
 
 export default async function AdminBoardPage({params}: { params: Promise<{ org: string; board: string }> }) {
-    const { org: orgSlug, board: boardSlug } = await params
+    const {org: orgSlug, board: boardSlug} = await params
 
     const session = await auth()
     if (!session?.user?.id) redirect("/login")
 
     const org = await prisma.organization.findUnique({
-        where: { slug: orgSlug }
+        where: {slug: orgSlug}
     })
 
     if (!org) notFound()
@@ -39,64 +41,74 @@ export default async function AdminBoardPage({params}: { params: Promise<{ org: 
 
     if (!board) notFound()
 
-    const posts = await prisma.post.findMany({
-        where: { boardId: board.id },
-        include: {
-            author: {
-                select: { id: true, name: true, email: true }
-            },
-            _count: {
-                select: { votes: true, comments: true }
-            },
-            votes: {
-                where: { userId: session.user.id },
-                select: { id: true }
-            }
-        },
-        orderBy: { createdAt: "desc" }
-    })
-
     const isAdmin = membership.role === "ADMIN"
 
+    const posts = await prisma.post.findMany({
+        where: {boardId: board.id},
+        include: {
+            author: {
+                select: {id: true, name: true, email: true}
+            },
+            _count: {
+                select: {votes: true, comments: true}
+            },
+            votes: {
+                where: {userId: session.user.id},
+                select: {id: true}
+            }
+        },
+        orderBy: [
+            {votes: {_count: "desc"}},
+            {createdAt: "desc"}
+        ],
+        take: POSTS_PER_PAGE
+    })
+
+    const totalCount = await prisma.post.count({where: {boardId: board.id}})
+
+    const hasMore = totalCount > POSTS_PER_PAGE
+    const lastPost = posts[posts.length - 1]
+
     return (
-        <div className="p-8 max-w-3xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="p-4 md:p-8 max-w-3xl">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
                 <div>
-                    <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground mb-1">
-                        <Link href={`/dashboard/${orgSlug}`} className="hover:underline truncate max-w-30">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Link href={`/dashboard/${orgSlug}`} className="hover:underline">
                             {org.name}
                         </Link>
                         <span>/</span>
-                        <span className="truncate max-w-30">{board.name}</span>
+                        <span className="truncate">{board.name}</span>
                     </div>
-                    <h1 className="text-2xl font-semibold tracking-tight">{board.name}</h1>
+                    <h1 className="text-2xl font-medium">{board.name}</h1>
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-2 flex-wrap">
                     {board.isPublic && (
                         <Link
                             href={`/${orgSlug}/${boardSlug}`}
                             target="_blank"
-                            className="flex-1 sm:flex-none text-center text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-2 hover:bg-blue-50 transition-colors whitespace-nowrap"
+                            className="inline-flex items-center justify-center h-9 whitespace-nowrap text-xs text-blue-600 border border-blue-200 rounded-lg px-3 hover:bg-blue-50 transition-colors"
                         >
                             View public board →
                         </Link>
                     )}
-                    {isAdmin && (
-                        <div className="flex-1 sm:flex-none">
-                            <NewPostButton boardId={board.id} />
-                        </div>
-                    )}
+                    {isAdmin && <NewPostButton boardId={board.id}/>}
                 </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
-                {posts.length} {posts.length === 1 ? "post" : "posts"}
-            </p>
-            <PostList
-                posts={posts}
+
+            <AdminPostList
+                initialPosts={posts.map((p) => ({
+                    ...p,
+                    hasVoted: p.votes.length > 0,
+                }))}
+                boardId={board.id}
                 isAdmin={isAdmin}
                 currentUserId={session.user.id}
                 orgSlug={orgSlug}
                 boardSlug={boardSlug}
+                totalCount={totalCount}
+                hasMore={hasMore}
+                lastCursor={lastPost?.id ?? null}
             />
         </div>
     )
