@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import {startTransition, useState} from "react"
 import { useRouter } from "next/navigation"
 
 type Props = {
     boardId: string
+    onSuccess?: () => void
 }
 
-export default function SubmitPostForm({ boardId }: Props) {
+export default function SubmitPostForm({ boardId, onSuccess }: Props) {
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [title, setTitle] = useState("")
@@ -43,7 +44,11 @@ export default function SubmitPostForm({ boardId }: Props) {
             setBody("")
             setName("")
             setEmail("")
-            router.refresh()
+
+            startTransition(() => {
+                router.refresh();
+                if (onSuccess) onSuccess();
+            });
         } catch {
             setError("Something went wrong. Please try again.")
         } finally {
