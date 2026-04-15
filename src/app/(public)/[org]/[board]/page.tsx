@@ -3,6 +3,7 @@ import {prisma} from "@/lib/db"
 import {auth} from "@/auth"
 import SubmitPostForm from "@/components/posts/SubmitPostForm"
 import PaginatedPostList from "@/components/posts/PaginatedPostList";
+import BoardContentWrapper from "@/components/posts/BoardContentWrapper";
 
 const POSTS_PER_PAGE = 10
 
@@ -76,20 +77,15 @@ export default async function PublicBoardPage({params}: { params: Promise<{ org:
                 </p>
             </div>
 
-            <div className="mb-8">
-                <SubmitPostForm boardId={board.id}/>
-            </div>
-
-            <PaginatedPostList
-                initialPosts={posts.map((p) => ({
-                    ...p,
-                    hasVoted: Array.isArray(p.votes) && p.votes.length > 0
-                }))}
+            <BoardContentWrapper
                 boardId={board.id}
                 currentUserId={session?.user?.id ?? null}
-                totalCount={totalCount}
-                hasMore={hasMore}
-                lastCursor={lastPost?.id ?? null}
+                initialData={{
+                    initialPosts: posts.map(p => ({...p, hasVoted: !!p.votes?.length})),
+                    totalCount,
+                    hasMore,
+                    lastCursor: lastPost?.id ?? null
+                }}
             />
         </div>
     )

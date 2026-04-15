@@ -3,6 +3,7 @@ import {prisma} from "@/lib/db"
 import {z} from "zod"
 import {headers} from "next/headers";
 import {publicPostRateLimit} from "@/lib/ratelimit";
+import {revalidatePath} from "next/cache";
 
 const publicPostSchema = z.object({
     title: z.string().min(1, "Title is required").max(200),
@@ -40,6 +41,16 @@ export async function POST(req: Request, {params}: { params: Promise<{ boardId: 
     try {
         const board = await prisma.board.findUnique({
             where: {id: boardId},
+            select: {
+                id: true,
+                isPublic: true,
+                slug: true,
+                org: {
+                    select: {
+                        slug: true
+                    }
+                }
+            }
         })
 
         if (!board || !board.isPublic) {
@@ -79,6 +90,8 @@ export async function POST(req: Request, {params}: { params: Promise<{ boardId: 
                 authorId: user.id
             }
         })
+
+        revalidatePath(`/${board.org.slug}/${board.slug}`);
 
         return NextResponse.json(post, {status: 201})
     } catch (error) {
