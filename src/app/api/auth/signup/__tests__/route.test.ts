@@ -1,6 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { POST } from "../route"
 
+vi.mock("next/headers", () => ({
+    headers: vi.fn().mockResolvedValue(new Map([
+        ["x-forwarded-for", "127.0.0.1"]
+    ]))
+}))
+
+vi.mock("@/lib/ratelimit", () => ({
+    signupRateLimit: {
+        limit: vi.fn().mockResolvedValue({ success: true })
+    }
+}))
+
 vi.mock("@/lib/db", () => ({
     prisma: {
         user: {
