@@ -1,0 +1,164 @@
+# FeedbackApp
+
+A feedback management tool for small product teams. Companies create a workspace,
+invite their team, and share a public board where their users can submit feature
+requests and bug reports. The team manages everything from a private dashboard.
+
+Built as a portfolio project to learn the Next.js App Router and modern fullstack
+patterns after years of Java EE backend work. The goal was to build something
+real — not a todo app — using the stack that actually appears in job postings.
+
+Live demo: https://feedback-app-eight-beige.vercel.app
+Test account: demo@feedbacker.app / demo1234
+
+---
+
+## What it does
+
+**For workspace admins**
+- Create a workspace with a public URL (https://feedback-app-eight-beige.vercel.app/your-org)
+- Create multiple boards per workspace (feature requests, bug reports, etc.)
+- Invite teammates by email with admin or member roles
+- Manage post statuses — Under review, Planned, In progress, Done
+- Edit and delete any post in their workspace
+
+**For team members**
+- View and comment on posts across all boards
+- Vote on posts and track what users are asking for
+- Edit and delete their own posts
+
+**For end users (no account needed)**
+- Visit a public board via a shared link
+- Submit feedback with just a name and email
+- Vote on existing posts (requires a free account)
+- Filter posts by status — most voted, planned, in progress, done
+
+---
+
+## Stack
+
+Next.js 15 (App Router), TypeScript, Prisma, PostgreSQL (Supabase),
+NextAuth v5, Tailwind CSS, shadcn/ui, Resend (email), Upstash Redis
+(rate limiting), Vitest + React Testing Library (tests), Vercel (deployment).
+
+---
+
+## Architecture decisions worth mentioning
+
+**Multi-tenant data isolation**
+Each org's data is fully isolated at the DB level. Every protected route checks
+membership — non-members get a 404 instead of a 403, so you can't even tell if
+an org exists.
+
+**Cursor-based pagination**
+The board and dashboard both use cursor-based pagination. Offset pagination slows
+down as data grows and breaks when new posts appear mid-browse. Cursors don't
+have those problems.
+
+**Optimistic UI updates**
+Votes and status changes update immediately and roll back if the request fails.
+Keeps things feeling snappy on slow connections.
+
+**Public submissions without an account**
+Users can submit feedback with just a name and email — no account needed.
+If they sign up later with the same email, their history carries over automatically.
+The signup flow detects the passwordless record and upgrades it instead of erroring out.
+
+**Invite flow**
+Invites use a signed token with a 7-day expiry. If the email already has an account
+they're added to the org immediately. Otherwise a signup link goes out via Resend.
+Tokens are single-use.
+
+**Rate limiting**
+Public submissions: 5/hour per IP. Signups: 10/hour. Uses Upstash Redis with a sliding
+window. Returns 429 with standard headers.
+
+**Role-based access control**
+Three roles: owner, admin, member. Owners can't be removed or downgraded. Admins handle
+boards, members, and settings. Members just use the boards. The sidebar hides links by
+role but enforcement is in the API — UI-only hiding isn't security.
+
+---
+
+## What I'd do differently
+
+Pass the boards list from the server layout into the sidebar instead of fetching it client-side.
+Avoids the hydration issue and cuts a network request on every navigation.
+
+Add Google OAuth. Most people reach for Google first and it's quick to add once GitHub is working.
+
+Add an activity feed so admins can see recent submissions across all boards in one place.
+
+Paginate comments on the post detail page — right now everything loads at once, which won't scale.
+
+---
+
+## Running locally
+
+You'll need Node 20+, pnpm, a Supabase project, a GitHub OAuth app,
+a Resend account, and an Upstash Redis database.
+
+```bash
+git clone https://github.com/guestFromAltair/feedback-app.git
+cd feedback-app
+pnpm install
+```
+
+Copy `.env.example` to `.env.local`:
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in your values:
+
+```env
+DATABASE_URL=postgresql://...?pgbouncer=true
+DIRECT_URL=postgresql://...
+AUTH_SECRET=your-nextauth-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+NEXTAUTH_URL=http://localhost:3000
+RESEND_API_KEY=re_your-resend-key
+EMAIL_FROM=onboarding@resend.dev
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=your-token
+```
+
+Push the database schema and start the dev server:
+
+```bash
+pnpm dlx prisma db push
+pnpm dev
+```
+
+Open http://localhost:3000.
+
+Run tests:
+
+```bash
+pnpm test
+```
+
+---
+
+## Project structure
+app/
+(public)/          — landing page, login, signup, public boards
+(dashboard)/       — private dashboard, all workspace management
+api/               — route handlers (REST API)
+components/
+layout/            — sidebar, topbar, navigation
+posts/             — post cards, voting, status, pagination
+comments/          — comment list and form
+members/           — member list, invite form
+settings/          — workspace settings form, delete button
+lib/
+db.ts              — Prisma client singleton
+auth.ts            — NextAuth config
+email.ts           — Resend email functions
+ratelimit.ts       — Upstash rate limiting
+types.ts           — shared TypeScript types
+actions.ts         — server actions (signout)
+prisma/
+schema.prisma      — database schema
