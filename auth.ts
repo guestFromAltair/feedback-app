@@ -10,12 +10,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/login",
+    signIn: "/login"
   },
   providers: [
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!
     }),
     Credentials({
       async authorize(credentials) {
@@ -27,7 +27,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!parsed.success) return null
 
         const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email },
+          where: { email: parsed.data.email }
         })
 
         if (!user || !user.password) return null
@@ -40,8 +40,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!passwordMatch) return null
 
         return user
-      },
-    }),
+      }
+    })
   ],
   callbacks: {
     async session({ session, token }) {
@@ -55,6 +55,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.sub = user.id
       }
       return token
-    },
-  },
+    }
+  }
 })

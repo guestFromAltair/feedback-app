@@ -2,10 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/db"
 
-export async function POST(
-    req: Request,
-    { params }: { params: Promise<{ postId: string }> }
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ postId: string }> }) {
     const { postId } = await params
     const session = await auth()
 
@@ -17,8 +14,8 @@ export async function POST(
         const vote = await prisma.vote.create({
             data: {
                 postId,
-                userId: session.user.id,
-            },
+                userId: session.user.id
+            }
         })
 
         return NextResponse.json(vote, { status: 201 })
@@ -43,10 +40,7 @@ export async function POST(
     }
 }
 
-export async function DELETE(
-    req: Request,
-    { params }: { params: Promise<{ postId: string }> }
-) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ postId: string }> }) {
     const { postId } = await params
     const session = await auth()
 
@@ -59,9 +53,9 @@ export async function DELETE(
             where: {
                 postId_userId: {
                     postId,
-                    userId: session.user.id,
-                },
-            },
+                    userId: session.user.id
+                }
+            }
         })
 
         return NextResponse.json({ success: true })
